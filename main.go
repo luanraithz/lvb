@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -47,7 +46,6 @@ func main() {
 	for k := range branchMap {
 		branches = append(branches, k)
 	}
-	fmt.Printf("%v", branches)
 	q := survey.Select{
 		Message: "Which branch do you want to go?",
 		Options: branches,
