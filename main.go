@@ -55,6 +55,10 @@ func main() {
 	for k := range branchMap {
 		branches = append(branches, k)
 	}
+	if len(branches) == 1 {
+		println("Didn't find any branch with `git reflog`")
+		os.Exit(1)
+	}
 	q := survey.Select{
 		Message: "Which branch do you want to go?",
 		Options: branches,
