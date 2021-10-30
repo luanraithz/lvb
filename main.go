@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
 )
 
 func must(err error) {
@@ -51,7 +52,13 @@ func main() {
 		Options: branches,
 	}
 	var branch string
-	survey.AskOne(&q, &branch, survey.WithValidator(survey.Required))
+	err = survey.AskOne(&q, &branch, survey.WithValidator(survey.Required))
+	if err != nil {
+		if err == terminal.InterruptErr {
+			return
+		}
+		panic(err)
+	}
 
 	checkout := exec.Command("git", "checkout", branch)
 	output, err := checkout.CombinedOutput()
