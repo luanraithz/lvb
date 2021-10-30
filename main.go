@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -40,7 +41,14 @@ func main() {
 		done <- true
 
 	}()
-	must(cmd.Start())
+	stderr, err := cmd.StderrPipe()
+	must(err)
+	err = cmd.Start()
+	if err != nil {
+		println(bufio.NewScanner(r).Text())
+		println(bufio.NewScanner(stderr).Text())
+		os.Exit(1)
+	}
 	<-done
 	must(cmd.Wait())
 	branches := []string{}
@@ -61,7 +69,6 @@ func main() {
 	}
 
 	checkout := exec.Command("git", "checkout", branch)
-	output, err := checkout.CombinedOutput()
-	must(err)
+	output, _ := checkout.CombinedOutput()
 	println(string(output))
 }
