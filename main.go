@@ -15,6 +15,15 @@ func must(err error) {
 		panic(err.Error())
 	}
 }
+
+func reverse(arr []string) []string {
+	if len(arr) == 0 {
+		return arr
+	}
+	return append(reverse(arr[1:]), arr[0])
+
+}
+
 func main() {
 	cmd := exec.Command("git", "reflog")
 
@@ -31,16 +40,21 @@ func main() {
 	}
 
 	branchMap := map[string]bool{} // Wanted a set
+	branches := []string{}
 	scanner := bufio.NewScanner(r)
 	counter := 0
 	for scanner.Scan() && counter < 10000 {
 		line := scanner.Text()
 		if strings.Contains(line, "checkout: moving from") {
-			branches := strings.Split(strings.Split(line, "checkout: moving from")[1], "to")
-			for _, b := range branches {
+			branchesInCommmand := strings.Split(strings.Split(line, "checkout: moving from")[1], "to")
+			for _, b := range reverse(branchesInCommmand) {
 				trimmed := strings.TrimSpace(b)
 				if trimmed != "" {
-					branchMap[trimmed] = true
+					exists := branchMap[trimmed]
+					if !exists {
+						branchMap[trimmed] = true
+						branches = append(branches, trimmed)
+					}
 				}
 			}
 		}
@@ -48,10 +62,6 @@ func main() {
 	}
 
 	must(cmd.Wait())
-	branches := []string{}
-	for k := range branchMap {
-		branches = append(branches, k)
-	}
 	if len(branches) == 1 {
 		println("Didn't find any branch with `git reflog`")
 		os.Exit(1)
