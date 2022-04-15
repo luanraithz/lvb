@@ -25,7 +25,7 @@ func reverse(arr []string) []string {
 }
 
 func main() {
-	cmd := exec.Command("git", "reflog")
+	cmd := exec.Command("git", "reflog", "--date=iso")
 
 	r, err := cmd.StdoutPipe()
 	must(err)
@@ -46,7 +46,7 @@ func main() {
 	for scanner.Scan() && counter < 10000 {
 		line := scanner.Text()
 		if strings.Contains(line, "checkout: moving from") {
-			branchesInCommmand := strings.Split(strings.Split(line, "checkout: moving from")[1], "to")
+			branchesInCommmand := strings.Split(strings.Split(line, "checkout: moving from")[1], " to ")
 			for _, b := range reverse(branchesInCommmand) {
 				trimmed := strings.TrimSpace(b)
 				if trimmed != "" {
