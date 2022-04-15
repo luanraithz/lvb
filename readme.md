@@ -6,10 +6,10 @@ Utility to change between the most recent branches
 
 ![demo](./demo.gif)
 
-```
-go get -u github.com/luanraithz/lvb
+```shell
+go install github.com/luanraithz/lvb@latest
 ```
 
-```
+```shell
 lvb
 ```
