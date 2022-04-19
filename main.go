@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/AlecAivazis/survey/v2/terminal"
+	"github.com/luanraithz/survey/v2"
+	"github.com/luanraithz/survey/v2/terminal"
 )
 
 func must(err error) {
@@ -66,12 +66,23 @@ func main() {
 		println("Didn't find any branch with `git reflog`")
 		os.Exit(1)
 	}
-	q := survey.Select{
-		Message: "Which branch do you want to go?",
-		Options: branches,
+	qe := []*survey.Question{
+		{
+			Prompt: &survey.Select{
+				Message: "Which branch do you want to go?",
+				Options: branches,
+			},
+			Name: "branch",
+			Transform: func(ans interface{}) interface{} {
+				panic(ans)
+				// println(ans)
+				// return "bla"
+			},
+		},
 	}
-	var branch string
-	err = survey.AskOne(&q, &branch, survey.WithValidator(survey.Required))
+	ans := map[string]string{}
+	err = survey.Ask(qe, &ans, survey.WithValidator(survey.Required))
+	println(ans["branch"])
 	if err != nil {
 		if err == terminal.InterruptErr {
 			return
@@ -79,7 +90,7 @@ func main() {
 		panic(err)
 	}
 
-	checkout := exec.Command("git", "checkout", branch)
-	output, _ := checkout.CombinedOutput()
-	println(string(output))
+	// checkout := exec.Command("git", "checkout", branch)
+	// output, _ := checkout.CombinedOutput()
+	// println(string(output))
 }
