@@ -6,8 +6,12 @@ Utility to change between the most recent branches
 
 ![demo](./demo.gif)
 
+> Can't use `go install` because I'm using a replace directive
+
 ```shell
-go install github.com/luanraithz/lvb@latest
+git clone git@github.com:luanraithz/lvb.git
+cd lvb
+go install
 ```
 
 ```shell

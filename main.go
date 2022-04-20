@@ -12,10 +12,14 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 )
 
-func must(err error) {
+func getErrorCode(err error) int {
 	if err != nil {
-		panic(err.Error())
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			return exiterr.ExitCode()
+		}
+		return 1
 	}
+	return 1
 }
 
 func reverse(arr []string) []string {
@@ -38,18 +42,20 @@ func extractDateFromLine(line string) *time.Time {
 }
 
 func main() {
+	_, err := os.Stat(".git")
 	cmd := exec.Command("git", "reflog", "--date=iso")
 
 	r, err := cmd.StdoutPipe()
-	must(err)
+	if err != nil {
+		println(bufio.NewScanner(r).Text())
+		os.Exit(getErrorCode(err))
+	}
 	stderr, err := cmd.StderrPipe()
-	must(err)
 	err = cmd.Start()
 
 	if err != nil {
-		println(bufio.NewScanner(r).Text())
 		println(bufio.NewScanner(stderr).Text())
-		os.Exit(1)
+		os.Exit(getErrorCode(err))
 	}
 
 	currentCommit := ""
@@ -72,13 +78,12 @@ func main() {
 			}
 		}
 		if strings.Contains(line, "checkout: moving from") {
-			branchesInCommmand := strings.Split(strings.Split(line, "checkout: moving from")[1], " to ")
-			for _, b := range reverse(branchesInCommmand) {
+			branchesInCommand := strings.Split(strings.Split(line, "checkout: moving from")[1], " to ")
+			for _, b := range reverse(branchesInCommand) {
 				trimmed := strings.TrimSpace(b)
 				if trimmed != "" {
-					_, exists := branchMap[trimmed]
-					if !exists {
-						fmt.Printf("%v", currentDate)
+					v, exists := branchMap[trimmed]
+					if !exists || v.Commit == "" {
 						if currentDate == nil {
 							currentDate = extractDateFromLine(line)
 						}
@@ -89,6 +94,8 @@ func main() {
 						}
 						currentCommit = ""
 						currentDate = nil
+					}
+					if !exists {
 						branches = append(branches, trimmed)
 					}
 				}
@@ -97,7 +104,16 @@ func main() {
 		counter++
 	}
 
-	must(cmd.Wait())
+	if err := cmd.Wait(); err != nil {
+		println(err.Error())
+		if t := bufio.NewScanner(r).Text(); t != "" {
+			println(t)
+		}
+		if t := bufio.NewScanner(stderr).Text(); t != "" {
+			println(t)
+		}
+		os.Exit(getErrorCode(err))
+	}
 	if len(branches) == 1 {
 		println("Didn't find any branch with `git reflog`")
 		os.Exit(1)
@@ -121,6 +137,10 @@ func main() {
 	ans := map[string]string{}
 	err = survey.Ask(qe, &ans, survey.WithValidator(survey.Required))
 	branch := ans["branch"]
+
+	if branch == "" {
+		os.Exit(0)
+	}
 
 	checkout := exec.Command("git", "checkout", branch)
 	output, _ := checkout.CombinedOutput()
