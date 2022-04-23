@@ -128,7 +128,7 @@ func main() {
 					if !ex || info.Commit == "" {
 						return "Never commited"
 					}
-					return fmt.Sprintf("%s (%s)", info.Commit, info.Date.Format("Jan 01 Mon"))
+					return fmt.Sprintf("%s (%s)", info.Commit, info.Date.Format("Jan 02 Mon"))
 				},
 			},
 			Name: "branch",
