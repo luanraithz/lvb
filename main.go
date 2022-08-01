@@ -65,7 +65,7 @@ func main() {
 		Date   time.Time
 		Name   string
 	}
-	branchMap := map[string]BranchInfo{} // Wanted a set
+	branchMap := map[string]BranchInfo{}
 	branches := []string{}
 	scanner := bufio.NewScanner(r)
 	counter := 0
