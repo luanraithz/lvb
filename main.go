@@ -123,6 +123,10 @@ func main() {
 			Prompt: &survey.Select{
 				Message: "Which branch do you want to go?",
 				Options: branches,
+				Filter: func(f string, opValue string, i int) bool {
+					info, _ := branchMap[opValue]
+					return strings.Contains(opValue, f) || strings.Contains(info.Commit, f)
+				},
 				Comment: func(opt string, index int) string {
 					info, ex := branchMap[opt]
 					if !ex || info.Commit == "" {
